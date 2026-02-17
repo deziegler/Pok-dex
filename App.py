@@ -8,16 +8,15 @@ from google.api_core.exceptions import ResourceExhausted
 st.set_page_config(page_title="Poké-Scanner", layout="centered")
 st.title("🔍 Poké-Value Scanner")
 
-# Securely get your API Key from Streamlit Secrets
+# Sidebar for the API Key
 api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
 
 if api_key:
     genai.configure(api_key=api_key)
-    # Using a slightly faster, more stable model for free tier
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Using the current standard model for 2026
+    model = genai.GenerativeModel('gemini-3.0-flash')
 
     st.write("### Choose how to scan:")
-    # Give the user a choice between camera and file upload
     option = st.radio("", ["📱 Use Camera", "🖼️ Upload from Gallery"])
 
     img_file = None
@@ -30,28 +29,24 @@ if api_key:
         img = Image.open(img_file)
         st.image(img, caption="Ready to analyze!", use_container_width=True)
         
-        # The "Special Instructions" for the AI
         prompt = """
-        Analyze this Pokémon card. I am a collector.
-        Please provide the following details clearly:
-        1.  **CARD IDENTITY:** Exact Name, Set Name, and Set Number (e.g., Charizard VMAX, Shining Fates, SV107/SV122).
-        2.  **RARITY SYMBOL:** Describe the specific rarity icon found on the card (e.g., "White Star", "Silvery-White Star with gold outline").
-        3.  **ESTIMATED MARKET VALUE:** Provide a price range based on recent sold listings for an ungraded card in near-mint condition.
-        4.  **AUTHENTICITY CHECKLIST:** Review the image for common signs of a fake card. Mention the font quality, HP number realism, and holographic pattern style.
+        Analyze this Pokémon card for a collector. Provide:
+        1. CARD IDENTITY: Name, Set, and Number.
+        2. RARITY: Describe the symbol (Star, Circle, etc.).
+        3. VALUE: Estimated market price for an ungraded card.
+        4. AUTHENTICITY: Check font, HP, and holo style for red flags.
         """
 
         if st.button("🔍 Scan Card Now"):
-            with st.spinner("Consulting the Professor... (This may take a few seconds)"):
+            with st.spinner("Consulting the Professor..."):
                 try:
-                    # Add a small delay to be gentle on the free-tier API
-                    time.sleep(1)
+                    time.sleep(1) # Gentle delay for the free tier
                     response = model.generate_content([prompt, img])
                     st.markdown("### 📊 Scan Results")
                     st.write(response.text)
                 except ResourceExhausted:
-                    st.error("😅 Phew! The AI is a bit overwhelmed right now.")
-                    st.warning("Please wait about a minute and try clicking 'Scan Card Now' again. The free plan has a speed limit!")
+                    st.error("😅 AI is busy! Wait 60 seconds and try again.")
                 except Exception as e:
-                    st.error(f"An unexpected error occurred: {e}")
+                    st.error(f"Something went wrong: {e}")
 else:
-    st.info("👈 Please open the sidebar and enter your Gemini API Key to start.")
+    st.info("👈 Please enter your Gemini API Key in the sidebar.")
