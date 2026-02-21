@@ -4,7 +4,7 @@ from PIL import Image
 import time
 from google.api_core.exceptions import ResourceExhausted
 
-# --- CONFIGURATION ---
+# --- APP CONFIG ---
 st.set_page_config(page_title="Poké-Scanner", layout="centered")
 st.title("🔍 Poké-Value Scanner")
 
@@ -13,7 +13,7 @@ api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
 
 if api_key:
     genai.configure(api_key=api_key)
-    # Using the current standard model for 2026
+    # UPDATED: Using the current 2026 model
     model = genai.GenerativeModel('gemini-3.0-flash')
 
     st.write("### Choose how to scan:")
@@ -40,7 +40,8 @@ if api_key:
         if st.button("🔍 Scan Card Now"):
             with st.spinner("Consulting the Professor..."):
                 try:
-                    time.sleep(1) # Gentle delay for the free tier
+                    # Gentle delay for the free tier speed limit
+                    time.sleep(1) 
                     response = model.generate_content([prompt, img])
                     st.markdown("### 📊 Scan Results")
                     st.write(response.text)
@@ -49,4 +50,4 @@ if api_key:
                 except Exception as e:
                     st.error(f"Something went wrong: {e}")
 else:
-    st.info("👈 Please enter your Gemini API Key in the sidebar.")
+    st.info("👈 Please enter your Gemini API Key in the sidebar to wake up the AI.")
